@@ -1,3 +1,6 @@
+import os
+import telebot
+
 class Location:
     def __init__(self, name, latitude, longitude):
         self.name = name
@@ -7,7 +10,7 @@ class Location:
 class LocationList:
     def __init__(self):
         self.locations = [
-Location(name= 'الكعبة المشرفة', latitude= 21.422503, longitude= 39.826179), 
+            Location(name= 'الكعبة المشرفة', latitude= 21.422503, longitude= 39.826179), 
 Location(name= 'الحرم المدني', latitude= 24.468333, longitude= 39.610833), 
 Location(name= 'روضة السبلة', latitude= 26.383767, longitude= 44.989633), 
 Location(name= 'روضة الكسر', latitude= 26.403737, longitude= 44.912791), 
@@ -2025,12 +2028,33 @@ Location(name= 'عرق الحمراني', latitude= 25.861932, longitude= 47.197
 Location(name= 'درب التنهات', latitude= 26.229931, longitude= 46.299369),
 Location(name= 'أم رجوم', latitude= 26.153192, longitude= 46.159269),
 Location(name= 'شويه', latitude= 26.366498, longitude= 47.233639),
-Location(name= 'نقرة الهيار', latitude= 25.730605, longitude= 44.529528), 
+Location(name= 'نقرة الهيار', latitude= 25.730605, longitude= 44.529528),
             # Add more locations as needed
         ]
 
     def get_coordinates(self, place):
         for location in self.locations:
             if location.name == place:
-                return location.latitude, location.longitude
+                return (location.latitude, location.longitude)
         return None
+
+API_TOKEN = '8033900249:AAFtZjonjtsBz_8jLyeqMNlDJAiPoCbRxsc'
+bot = telebot.TeleBot(API_TOKEN)
+location_list = LocationList()
+
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    bot.reply_to(message, "Welcome to the Location Bot! Send me a place name and I'll give you the coordinates.")
+
+@bot.message_handler(func=lambda message: True)
+def send_coordinates(message):
+    place = message.text
+    coordinates = location_list.get_coordinates(place)
+    if coordinates:
+        latitude, longitude = coordinates
+        bot.send_message(message.chat.id, f"{latitude}, {longitude}")
+    else:
+        bot.send_message(message.chat.id, "Sorry, I couldn't find the coordinates for that place.")
+
+if __name__ == '__main__':
+    bot.polling(none_stop=True)
