@@ -2044,7 +2044,7 @@ location_list = LocationList()
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "Welcome to the Location Bot! Send me a place name and I'll give you the coordinates.")
+    bot.reply_to(message, "أهلا وسهلا بك في البوت الخاص بتطبيق كاشت. اكتب اسم أي موقع وستظهر لك الاحداثيات الدقيقة مباشرة (فياض/ رياض/ شعبان/ أودية/ عروق/ موارد ماء/ قرى/ هجر/ دحول/ معالم....الخ). لاتنسى تحميل تطبيق كاشت من متاجر التطبيقات.")
 
 @bot.message_handler(func=lambda message: True)
 def send_coordinates(message):
@@ -2054,7 +2054,7 @@ def send_coordinates(message):
         latitude, longitude = coordinates
         bot.send_message(message.chat.id, f"{latitude}, {longitude}")
     else:
-        bot.send_message(message.chat.id, "Sorry, I couldn't find the coordinates for that place.")
+        bot.send_message(message.chat.id, "اسم موقع غير صحيح حاول بمسمى اخر أو قم بتعديل الهمزة أو التاء المربوطة")
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
