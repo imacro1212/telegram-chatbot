@@ -1,5 +1,6 @@
 import os
 import telebot
+import difflib
 
 class Location:
     def __init__(self, name, latitude, longitude):
@@ -2032,13 +2033,16 @@ Location(name= 'نقرة الهيار', latitude= 25.730605, longitude= 44.52952
             # Add more locations as needed
         ]
 
+    def get_close_matches(self, place):
+        return difflib.get_close_matches(place, [location.name for location in self.locations], n=5, cutoff=0.6)
+
     def get_coordinates(self, place):
         for location in self.locations:
             if location.name == place:
                 return (location.latitude, location.longitude)
         return None
 
-API_TOKEN = '8033900249:AAFtZjonjtsBz_8jLyeqMNlDJAiPoCbRxsc'
+API_TOKEN = os.getenv('8033900249:AAFtZjonjtsBz_8jLyeqMNlDJAiPoCbRxsc')
 bot = telebot.TeleBot(API_TOKEN)
 location_list = LocationList()
 
@@ -2049,12 +2053,29 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: True)
 def send_coordinates(message):
     place = message.text
-    coordinates = location_list.get_coordinates(place)
-    if coordinates:
-        latitude, longitude = coordinates
-        bot.send_message(message.chat.id, f"{latitude}, {longitude}")
+    matches = location_list.get_close_matches(place)
+    if matches:
+        response = "اختر الموقع الصحيح من القائمة التالية:\n"
+        for i, match in enumerate(matches, 1):
+            response += f"{i}. {match}\n"
+        bot.send_message(message.chat.id, response)
     else:
         bot.send_message(message.chat.id, "اسم موقع غير صحيح حاول بمسمى اخر أو قم بتعديل الهمزة أو التاء المربوطة")
 
+@bot.message_handler(func=lambda message: message.text.isdigit())
+def handle_choice(message):
+    choice = int(message.text) - 1
+    matches = location_list.get_close_matches(last_query)
+    if 0 <= choice < len(matches):
+        coordinates = location_list.get_coordinates(matches[choice])
+        if coordinates:
+            latitude, longitude = coordinates
+            bot.send_message(message.chat.id, f"{latitude}, {longitude}")
+        else:
+            bot.send_message(message.chat.id, "حدث خطأ في جلب الاحداثيات.")
+    else:
+        bot.send_message(message.chat.id, "اختيار غير صحيح. حاول مرة أخرى.")
+
 if __name__ == '__main__':
+    last_query = ""
     bot.polling(none_stop=True)
